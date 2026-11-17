@@ -72,6 +72,38 @@ No Linux/macOS, substitua o comando de criação do ambiente por 'python3.12 -m 
 
 Usuários com papel 'operador' podem consultar e registrar movimentações, mas não criar ou editar produtos. Novos usuários são criados somente pelo comando CLI 'create-user'.
 
+## Roteiro de validação manual do MVP
+
+Este roteiro complementa os testes automatizados e permite verificar o fluxo central do **Estoque Fácil** em ambiente local. Use somente informações fictícias e uma instalação de teste, sem dados de clientes ou mercadorias reais.
+
+### Preparação
+
+1. Siga as instruções de **Executar localmente** e crie um usuário administrador de teste.
+2. Acesse o sistema pelo navegador em `http://127.0.0.1:5000`.
+3. Anote a versão/commit testado, a data, o navegador e o resultado de cada cenário.
+4. Utilize um produto fictício com código `ARROZ-TESTE-01`, nome `Arroz de teste 1 kg`, estoque mínimo `5` e, se desejar testar validade, uma data próxima.
+
+### Cenários e resultados esperados
+
+| ID | Ação de teste | Resultado esperado |
+| --- | --- | --- |
+| VM01 | Entrar com credenciais válidas do administrador. | Acesso ao painel; opções permitidas disponíveis. |
+| VM02 | Cadastrar o produto fictício com código único e estoque mínimo de 5 unidades. | Produto aparece na consulta de produtos com saldo inicial igual a zero. |
+| VM03 | Registrar entrada de 10 unidades para o produto cadastrado. | Movimentação registrada; saldo atualizado para 10 unidades no painel. |
+| VM04 | Registrar saída de 6 unidades. | Movimentação registrada; saldo atualizado para 4 unidades; alerta de estoque baixo exibido. |
+| VM05 | Tentar registrar uma saída de 5 unidades quando há apenas 4 em estoque. | Operação rejeitada; mensagem compreensível; saldo permanece em 4 unidades. |
+| VM06 | Tentar cadastrar um produto com o mesmo código do produto de teste. | Cadastro duplicado impedido, sem criar um segundo registro. |
+| VM07 | Encerrar a sessão e tentar acessar uma página protegida. | A página exige nova autenticação; operação protegida não é executada. |
+| VM08 | Cadastrar um produto com validade próxima e consultar o painel. | Alerta de validade apresentado de forma compreensível, sem depender apenas da cor. |
+
+### Registro de evidências
+
+Para cada cenário, registre **aprovado**, **reprovado** ou **não executado**, com observação objetiva e captura de tela sem informações pessoais. Em caso de falha, anote os passos para reproduzir, a mensagem exibida e o saldo observado antes/depois. Não inclua senhas, chaves de sessão, tokens ou o arquivo do banco de dados nas evidências.
+
+### Critério de conclusão
+
+O fluxo essencial estará pronto para a etapa de validação com público externo quando cadastro, entrada, saída, atualização do saldo e tratamento de saldo insuficiente funcionarem sem perda de dados (VM02 a VM05). Falhas de autenticação ou autorização também devem ser corrigidas antes de qualquer teste com dados reais. Este roteiro é um **plano de testes**: seu registro no repositório não significa que todos os cenários já foram executados ou aprovados.
+
 ## Testes automatizados
 
 ```powershell
