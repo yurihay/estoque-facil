@@ -7,6 +7,7 @@ import pytest
 from werkzeug.security import generate_password_hash
 
 from app import create_app
+from product_validation import validate_product_form
 
 
 @pytest.fixture
@@ -159,3 +160,29 @@ def test_accessible_labels_and_navigation(client):
     assert b'for="expiry_date"' in page
     assert b'Ir para o conte' in page
     assert b'aria-current="page"' in page
+
+
+# A validação de campos é testada sem depender de uma requisição Flask.
+def test_product_validation_normalizes_valid_fields():
+    data = {
+        "sku": " arroz_01 ", "name": " Arroz 1 kg ",
+        "min_qty": "5", "expiry_date": "",
+    }
+    assert validate_product_form(data) == ("ARROZ_01", "Arroz 1 kg", 5, None)
+
+
+@pytest.mark.parametrize("field, invalid", [
+    ("sku", "x"),
+    ("name", "a"),
+    ("min_qty", "-1"),
+    ("min_qty", "não é inteiro"),
+    ("expiry_date", "2026-02-31"),
+])
+def test_product_validation_rejects_invalid_fields(field, invalid):
+    data = {
+        "sku": "ARROZ01", "name": "Arroz 1 kg",
+        "min_qty": "5", "expiry_date": "",
+    }
+    data[field] = invalid
+    with pytest.raises(ValueError):
+        validate_product_form(data)

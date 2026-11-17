@@ -22,4 +22,4 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
       - name: Executar testes automatizados
-        run: python -m pytest -q
+        run: python -m pytest -q --cov=app --cov=product_validation --cov-report=term-missing

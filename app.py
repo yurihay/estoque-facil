@@ -15,6 +15,8 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from product_validation import validate_product_form
+
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -207,27 +209,6 @@ def create_app(test_config=None):
             total_units=sum(p["quantity"] for p in products),
         )
 
-    def validate_product_form():
-        sku = request.form.get("sku", "").strip().upper()
-        name = request.form.get("name", "").strip()
-        expiry = request.form.get("expiry_date", "").strip() or None
-        if not re.fullmatch(r"[A-Z0-9._-]{2,32}", sku):
-            raise ValueError("Código deve ter 2 a 32 letras, números, pontos ou hífens.")
-        if not 2 <= len(name) <= 100:
-            raise ValueError("Nome deve conter entre 2 e 100 caracteres.")
-        try:
-            minimum = int(request.form.get("min_qty", ""))
-        except ValueError as exc:
-            raise ValueError("Estoque mínimo deve ser um número inteiro.") from exc
-        if not 0 <= minimum <= 1000000:
-            raise ValueError("Estoque mínimo deve estar entre 0 e 1.000.000.")
-        if expiry:
-            try:
-                date.fromisoformat(expiry)
-            except ValueError as exc:
-                raise ValueError("Data de validade inválida.") from exc
-        return sku, name, minimum, expiry
-
     @app.route("/products", methods=["GET", "POST"])
     @login_required
     def products():
@@ -235,7 +216,7 @@ def create_app(test_config=None):
             if g.user["role"] != "admin":
                 abort(403)
             try:
-                sku, name, minimum, expiry = validate_product_form()
+                sku, name, minimum, expiry = validate_product_form(request.form)
                 with db():
                     db().execute(
                         "INSERT INTO products(sku, name, min_qty, expiry_date) "
@@ -262,7 +243,7 @@ def create_app(test_config=None):
             abort(404)
         if request.method == "POST":
             try:
-                sku, name, minimum, expiry = validate_product_form()
+                sku, name, minimum, expiry = validate_product_form(request.form)
                 if sku != item["sku"]:
                     raise ValueError("Código do produto não pode ser alterado.")
                 with db():
