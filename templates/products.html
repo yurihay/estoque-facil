@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Cadastro de produtos{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1>Cadastro de produtos</h1><p>Defina identificação, estoque mínimo e validade.</p></div></div>
+{% if current_user['role'] == 'admin' %}
+<section class="card" aria-labelledby="form-titulo">
+  <h2 id="form-titulo">{{ 'Editar produto' if editing else 'Novo produto' }}</h2>
+  <form method="post" action="{{ url_for('edit_product', product_id=editing['id']) if editing else url_for('products') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      <div><label for="sku">Código (SKU)</label>
+        <input id="sku" name="sku" required minlength="2" maxlength="32" pattern="[A-Za-z0-9._-]{2,32}" value="{{ editing['sku'] if editing else '' }}" {% if editing %}readonly{% endif %}>
+      </div>
+      <div><label for="name">Nome do produto</label>
+        <input id="name" name="name" required minlength="2" maxlength="100" value="{{ editing['name'] if editing else '' }}">
+      </div>
+      <div><label for="min_qty">Quantidade mínima</label>
+        <input id="min_qty" name="min_qty" type="number" min="0" max="1000000" required value="{{ editing['min_qty'] if editing else 5 }}">
+      </div>
+      <div><label for="expiry_date">Data de validade (opcional)</label>
+        <input id="expiry_date" name="expiry_date" type="date" value="{{ editing['expiry_date'] if editing else '' }}">
+      </div>
+    </div>
+    <p class="hint">O saldo começa em zero. Registre entradas e saídas na tela Movimentações, preservando o histórico.</p>
+    <button class="button" type="submit">{{ 'Salvar alterações' if editing else 'Cadastrar produto' }}</button>
+    {% if editing %}<a class="button button-quiet" href="{{ url_for('products') }}">Cancelar edição</a>{% endif %}
+  </form>
+</section>
+{% endif %}
+<section class="card" aria-labelledby="produtos-titulo">
+  <h2 id="produtos-titulo">Produtos cadastrados</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th scope="col">SKU</th><th scope="col">Nome</th><th scope="col">Saldo</th><th scope="col">Mínimo</th><th scope="col">Validade</th>{% if current_user['role'] == 'admin' %}<th scope="col">Ação</th>{% endif %}</tr></thead>
+      <tbody>
+      {% for p in products %}
+        <tr><td>{{ p['sku'] }}</td><td>{{ p['name'] }}</td><td>{{ p['quantity'] }}</td><td>{{ p['min_qty'] }}</td><td>{{ p['expiry_date'] or '—' }}</td>{% if current_user['role'] == 'admin' %}<td><a href="{{ url_for('edit_product', product_id=p['id']) }}">Editar</a></td>{% endif %}</tr>
+      {% else %}
+        <tr><td colspan="6">Ainda não há produtos cadastrados.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

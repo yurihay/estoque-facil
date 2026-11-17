@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<section class="narrow card">
+  <h1>Entrar no Estoque Fácil</h1>
+  <p>Acesse com o usuário criado no terminal pelo administrador.</p>
+  <form method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <label for="username">Usuário</label>
+    <input id="username" name="username" autocomplete="username" required maxlength="40">
+    <label for="password">Senha</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button class="button" type="submit">Entrar com segurança</button>
+  </form>
+</section>
+{% endblock %}
