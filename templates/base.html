@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Estoque Fácil - controle de estoque para pequenos comércios">
+  <title>{% block title %}Estoque Fácil{% endblock %} | Estoque Fácil</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="{{ url_for('dashboard') }}">📦 Estoque Fácil</a>
+      {% if current_user %}
+        <nav aria-label="Navegação principal">
+          <a href="{{ url_for('dashboard') }}" {% if request.endpoint == 'dashboard' %}aria-current="page"{% endif %}>Painel</a>
+          <a href="{{ url_for('products') }}" {% if request.endpoint in ['products','edit_product'] %}aria-current="page"{% endif %}>Produtos</a>
+          <a href="{{ url_for('movements') }}" {% if request.endpoint == 'movements' %}aria-current="page"{% endif %}>Movimentações</a>
+        </nav>
+        <div class="user-area">
+          <span>{{ current_user['username'] }} ({{ current_user['role'] }})</span>
+          <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="button button-quiet">Sair</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </header>
+  <main id="conteudo" class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="notice {{ category }}" role="status">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">MVP acadêmico · Dados locais de demonstração</footer>
+</body>
+</html>

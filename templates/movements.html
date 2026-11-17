@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Movimentações{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1>Registro de movimentações</h1><p>Atualize o estoque e acompanhe entradas e saídas.</p></div></div>
+<section class="card" aria-labelledby="movimento-titulo">
+  <h2 id="movimento-titulo">Nova movimentação</h2>
+  <form method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      <div><label for="product_id">Produto</label>
+        <select id="product_id" name="product_id" required>
+          <option value="">Selecione um produto</option>
+          {% for product in products %}
+            <option value="{{ product['id'] }}">{{ product['name'] }} — saldo {{ product['quantity'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div><label for="kind">Tipo</label>
+        <select id="kind" name="kind" required>
+          <option value="entrada">Entrada</option>
+          <option value="saida">Saída</option>
+        </select>
+      </div>
+      <div><label for="amount">Quantidade</label>
+        <input id="amount" name="amount" type="number" min="1" max="1000000" required>
+      </div>
+    </div>
+    <p class="hint">Saídas acima do saldo disponível serão rejeitadas. Todas as operações ficam registradas.</p>
+    <button class="button" type="submit" {% if not products %}disabled{% endif %}>Confirmar movimentação</button>
+  </form>
+</section>
+<section class="card" aria-labelledby="historico-titulo">
+  <h2 id="historico-titulo">Histórico recente</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th scope="col">Data e hora (servidor)</th><th scope="col">Produto</th><th scope="col">Operação</th><th scope="col">Quantidade</th><th scope="col">Usuário</th></tr></thead>
+      <tbody>
+      {% for m in history %}
+        <tr><td>{{ m['created_at'] }}</td><td>{{ m['product_name'] }}</td><td>{{ 'Entrada' if m['kind'] == 'entrada' else 'Saída' }}</td><td>{{ m['amount'] }}</td><td>{{ m['username'] }}</td></tr>
+      {% else %}
+        <tr><td colspan="5">Ainda não há movimentações.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
